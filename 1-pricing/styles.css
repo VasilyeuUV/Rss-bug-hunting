@@ -67,6 +67,8 @@
    }
 
    .plan {
+     display: flex;
+     flex-direction: column;
      background: #ffffff;
      border: 1px solid #e2e8f0;
      border-radius: 0;
@@ -101,6 +103,7 @@
      list-style: none;
      margin-bottom: 24px;
      text-align: left;
+     flex-grow: 1;
    }
 
    .features li {
@@ -122,4 +125,5 @@
      color: #ffffff;
      text-decoration: none;
      font-weight: 600;
+     align-self: center;
    }
