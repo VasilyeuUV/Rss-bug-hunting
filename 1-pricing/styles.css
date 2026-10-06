@@ -11,6 +11,12 @@ body {
   padding: 40px 20px;
 }
 
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
 .page-header {
   text-align: center;
   margin-bottom: 40px;
@@ -32,9 +38,14 @@ body {
   text-decoration: none;
 }
 
+
+/* =========================================================
+   PLANS
+   ========================================================= */
+
 .plans {
   display: flex;
-  flex-direction: column;
+  flex-direction: rows;
   justify-content: center;
   align-items: stretch;
   gap: 0;
