@@ -11,6 +11,10 @@ body {
   padding: 40px 20px;
 }
 
+/* =========================================================
+   HEADER
+   ========================================================= */
+
 .page-header {
   text-align: center;
   margin-bottom: 40px;
@@ -32,18 +36,22 @@ body {
   text-decoration: none;
 }
 
+
+
+/* =========================================================
+   Gallery
+   ========================================================= */
+
 .gallery {
   display: flex;
-  flex-direction: column;
-  flex-wrap: nowrap;
-  justify-content: flex-start;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 0;
   max-width: 1000px;
   margin: 0 auto;
 }
 
 .card {
-  width: 300px;
   background: #ffffff;
   border-radius: 12px;
   overflow: hidden;
