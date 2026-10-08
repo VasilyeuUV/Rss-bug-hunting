@@ -32,8 +32,11 @@ function toggleTask(id) {
 }
 
 function deleteTask(id) {
-  tasks.filter((t) => t.id !== id);
-  render();
+  const index = tasks.findIndex((t) => t.id === id)
+  if (index !== -1) {
+    tasks.splice(index, 1);
+    render();
+  }
 }
 
 function clearCompleted() {
@@ -50,7 +53,7 @@ function updateCounter() {
 }
 
 function render() {
-  list.innerHTML = "";
+  list.replaceChildren();
 
   const visible = getVisibleTasks();
   visible.forEach(task => createToDoItem(task))
