@@ -101,7 +101,7 @@ body {
   cursor: pointer;
 }
 
-.task.done .task__text {
+.completed .task__text {
   text-decoration: line-through;
   color: #94a3b8;
 }
