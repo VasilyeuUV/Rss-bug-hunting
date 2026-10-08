@@ -11,7 +11,12 @@ let currentFilter = "all";
 let nextId = 1;
 
 function addTask() {
-  const text = input.value;
+  const text = input.value.trim();
+  if (!text) {
+    errorEl.hidden = false;
+    return;
+  }
+
   errorEl.hidden = true;
   tasks.push({ id: nextId++, text: text, done: false });
   input.value = "";
@@ -69,9 +74,6 @@ function render() {
   updateCounter();
 }
 
-addBtn.addEventListener("dblclick", addTask);
-clearBtn.addEventListener("click", clearCompleted);
-
 filterButtons.forEach((btn) => {
   btn.addEventListener("click", () => {
     filterButtons.forEach((b) => b.classList.remove("active"));
@@ -81,9 +83,11 @@ filterButtons.forEach((btn) => {
   });
 });
 
-function initEvents() {
+function init() {
   addBtn.addEventListener('click', addTask);
+  clearBtn.addEventListener("click", clearCompleted);
+
+  render();
 }
 
-initEvents();
-render();
+init();
