@@ -81,4 +81,9 @@ filterButtons.forEach((btn) => {
   });
 });
 
+function initEvents() {
+  addBtn.addEventListener('click', addTask);
+}
+
+initEvents();
 render();
