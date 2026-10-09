@@ -6,8 +6,14 @@ const errorEl = document.getElementById("error");
 const clearBtn = document.getElementById("clear-completed");
 const filterButtons = document.querySelectorAll(".filter");
 
+const FILTERS = Object.freeze({
+  ALL: "all",
+  ACTIVE: "active",
+  DONE: "done"
+});
+
 let tasks = [];
-let currentFilter = "all";
+let currentFilter = FILTERS.ALL;
 let nextId = 1;
 
 function addTask() {
@@ -45,23 +51,30 @@ function clearCompleted() {
 }
 
 function getVisibleTasks() {
-  return tasks;
+  switch (currentFilter) {
+    case FILTERS.ACTIVE:
+      return getTasksByState({ isDone: false });
+    case FILTERS.DONE:
+      return getTasksByState({ isDone: true });
+    default:
+      return tasks;
+  }
 }
 
-function getActiveTasks() {
-  return tasks.filter(task => !task.done);
+function getTasksByState({ isDone } = {}) {
+  return tasks.filter(task => task.done === isDone);
 }
 
 function updateCounter() {
-  const activeTasks = getActiveTasks();
+  const activeTasks = getTasksByState({ isDone: false });
   counter.textContent = "Активных задач: " + activeTasks.length;
 }
 
 function render() {
   list.replaceChildren();
 
-  const visible = getVisibleTasks();
-  visible.forEach(task => createToDoItem(task))
+  const visibleTasks = getVisibleTasks();
+  visibleTasks.forEach(task => createToDoItem(task))
 
   updateCounter();
 }
@@ -88,19 +101,18 @@ function createToDoItem(task) {
   list.appendChild(li);
 }
 
-
-filterButtons.forEach((btn) => {
-  btn.addEventListener("click", () => {
-    filterButtons.forEach((b) => b.classList.remove("active"));
-    btn.classList.add("active");
-    currentFilter = btn.dataset.filter;
-    render();
-  });
-});
-
 function init() {
   addBtn.addEventListener('click', addTask);
   clearBtn.addEventListener("click", clearCompleted);
+
+  filterButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      filterButtons.forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      currentFilter = btn.dataset.filter;
+      render();
+    });
+  });
 
   render();
 }
