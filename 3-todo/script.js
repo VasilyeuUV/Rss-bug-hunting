@@ -48,8 +48,13 @@ function getVisibleTasks() {
   return tasks;
 }
 
+function getActiveTasks() {
+  return tasks.filter(task => !task.done);
+}
+
 function updateCounter() {
-  counter.textContent = "Активных задач: " + tasks.length;
+  const activeTasks = getActiveTasks();
+  counter.textContent = "Активных задач: " + activeTasks.length;
 }
 
 function render() {
