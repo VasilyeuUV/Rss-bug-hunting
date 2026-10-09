@@ -8,82 +8,61 @@ const products = [
 const cartManager = (function () {
   let cartProducts = [];
   let discount = 0;
+  let onUpdate = null;
 
-  function getProduct(id) {
-    return cartProducts.find(p => p.id === id)
-  }
+  const notify = () => onUpdate?.();
+  const getProduct = (id) => cartProducts.find(p => p.id === id);
 
-  function getProductTotalSum(product) {
-    return product
-      ? product.price * product.qty
-      : 0;
-  }
-
-  function increase(id) {
+  function changeQty(id, amount) {
     const cardProduct = getProduct(id);
-    if (!cardProduct)
+    if (!cardProduct
+      || (amount < 0 && cardProduct.qty < 2))
       return false;
-
-    ++cardProduct.qty;
+    cardProduct.qty += amount;
+    notify();
     return true;
   }
 
-  function decrease(id) {
-    const cardProduct = getProduct(id);
-    if (cardProduct
-      && cardProduct.qty > 1)
-      --cardProduct.qty;
-  }
-
   return {
-    getProducts() {
-      return [...cartProducts];
+    init(renderCallback) {
+      onUpdate = renderCallback;
+    },
+
+    getProducts: () => [...cartProducts],
+    getTotalQuantity: () => cartProducts.reduce((sum, p) => sum + p.qty, 0),
+    getTotalPrice(product) {
+      if (product)
+        return product.price * product.qty;
+      return cartProducts.reduce((sum, p) => sum + p.price * p.qty, 0) * (1 - discount);
     },
 
     addToCart(product) {
-      if (!increase(product.id)) {
+      if (!changeQty(product.id, 1)) {
         cartProducts.push({ ...product, qty: 1 });
+        notify();
       }
     },
 
-    increaseQty(id) {
-      return increase(id);
-    },
-
-    decreaseQty(id) {
-      return decrease(id);
-    },
+    increaseQty: (id) => changeQty(id, 1),
+    decreaseQty: (id) => changeQty(id, -1),
 
     removeItem(id) {
       cartProducts = cartProducts.filter((i) => i.id !== id);
+      notify();
     },
 
     applyPromo(code) {
-      if (code === "SALE10") {
-        discount = 0.1;
-        return true;
-      }
-      return false;
+      discount = code === "SALE10"
+        ? 0.1
+        : 0;
+      notify();
     },
 
     clearCart() {
       cartProducts = [];
-    },
-
-    getTotalPrice(product) {
-      if (product) {
-        return getProductTotalSum(product)
-      }
-
-      return cartProducts?.length > 0
-        ? cartProducts.reduce((sum, p) => sum + getProductTotalSum(p), 0) * (1 - discount)
-        : 0;
-    },
-
-    getTotalQuantity() {
-      return cartProducts.reduce((sum, p) => sum + p.qty, 0);
+      notify();
     }
-  }
+  };
 })();
 
 const productsEl = document.getElementById("products");
@@ -99,43 +78,45 @@ function renderProducts() {
   products.forEach((p) => {
     const card = document.createElement("div");
     card.className = "product";
-    card.innerHTML = `<h3>${p.name}</h3><p>${p.price} ₽</p>`;
+
+    const title = document.createElement("h3");
+    title.textContent = p.name;
+
+    const price = document.createElement("p");
+    price.textContent = `${p.price} ₽`;
+
     const btn = document.createElement("button");
     btn.textContent = "В корзину";
-    btn.addEventListener("click", () => {
-      cartManager.addToCart(p);
-      renderCart();
-    });
-    card.appendChild(btn);
+    btn.addEventListener("click", () => cartManager.addToCart(p));
+
+    card.append(title, price, btn);
     productsEl.appendChild(card);
   });
 }
 
 function renderCartProductItem(product) {
-  const lineTotal = cartManager.getTotalPrice(product);
+  const nameSpan = document.createElement("span");
+  nameSpan.textContent = product.name;
+
   const li = document.createElement("li");
   li.className = "cart-item";
-  li.innerHTML = `<span>${product.name}</span>
-      <button class="qty-btn" data-act="dec">−</button>
-      <span class="qty">${product.qty}</span>
-      <button class="qty-btn" data-act="inc">+</button>
-      <span class="line">${lineTotal} ₽</span>
-      <button class="remove">✕</button>`;
-  li.querySelector('[data-act="inc"]')
-    .addEventListener("click", () => {
-      cartManager.increaseQty(product.id);
-      renderCart();
-    });
-  li.querySelector('[data-act="dec"]')
-    .addEventListener("click", () => {
-      cartManager.decreaseQty(product.id);
-      renderCart();
-    });
-  li.querySelector(".remove")
-    .addEventListener("click", () => {
-      cartManager.removeItem(product.id);
-      renderCart();
-    });
+  li.append(nameSpan);
+  li.insertAdjacentHTML("beforeend", `
+    <button class="qty-btn" data-act="dec">−</button>
+    <span class="qty">${product.qty}</span>
+    <button class="qty-btn" data-act="inc">+</button>
+    <span class="line">${cartManager.getTotalPrice(product)} ₽</span>
+    <button class="remove">✕</button>
+  `);
+  li.addEventListener("click", (e) => {
+    const target = e.target;
+    const act = target.dataset.act;
+
+    if (act === "inc") cartManager.increaseQty(product.id);
+    if (act === "dec") cartManager.decreaseQty(product.id);
+    if (target.classList.contains("remove")) cartManager.removeItem(product.id);
+  });
+
   cartItemsEl.appendChild(li);
 }
 
@@ -143,7 +124,7 @@ function renderCart() {
   cartItemsEl.replaceChildren();
 
   const cartProducts = cartManager.getProducts();
-  cartProducts.forEach(product => renderCartProductItem(product));
+  cartProducts.forEach(renderCartProductItem);
 
   badgeEl.textContent = cartManager.getTotalQuantity();
   totalEl.textContent = cartManager.getTotalPrice();
@@ -151,14 +132,10 @@ function renderCart() {
 }
 
 function init() {
-  promoBtn.addEventListener("click", () => {
-    cartManager.applyPromo(promoInput.value.trim());
-    renderCart();
-  });
-  clearBtn.addEventListener("click", () => {
-    cartManager.clearCart();
-    renderCart();
-  });
+  promoBtn.addEventListener("click", () => cartManager.applyPromo(promoInput.value.trim()));
+  clearBtn.addEventListener("click", () => cartManager.clearCart());
+
+  cartManager.init(renderCart);
 
   renderProducts();
   renderCart();
