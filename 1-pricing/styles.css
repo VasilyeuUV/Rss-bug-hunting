@@ -58,7 +58,6 @@
 
    .plans {
      display: flex;
-     flex-direction: rows;
      justify-content: center;
      align-items: stretch;
      gap: 24px;
