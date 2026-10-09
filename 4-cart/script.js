@@ -49,17 +49,21 @@ function addToCart(id) {
 
 function increaseQty(id) {
   const cardProduct = getCartProduct(id);
-  if(!cardProduct) 
+  if (!cardProduct)
     return false;
-  
+
   ++cardProduct.qty;
   renderCart();
   return true;
 }
 
 function decreaseQty(id) {
-  const item = cart.find((i) => i.id === id);
-  item.qty--;
+  const cardProduct = getCartProduct(id);
+  if (!cardProduct
+    || cardProduct.qty <= 1)
+    return;
+
+  --cardProduct.qty;
   renderCart();
 }
 
