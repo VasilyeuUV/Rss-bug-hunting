@@ -30,19 +30,31 @@ function renderProducts() {
   });
 }
 
+function getCartProduct(id) {
+  return cart.find(p => p.id === id)
+}
+
 function addToCart(id) {
   const product = products.find((p) => p.id === id);
   if (!product) {
     return;
   }
-  cart.push({ id: product.id, name: product.name, price: product.price, qty: 1 });
+
+  if (!increaseQty(id)) {
+    cart.push({ id: product.id, name: product.name, price: product.price, qty: 1 });
+  }
+
   renderCart();
 }
 
 function increaseQty(id) {
-  const item = cart.find((i) => i.id === id);
-  item.qty;
+  const cardProduct = getCartProduct(id);
+  if(!cardProduct) 
+    return false;
+  
+  ++cardProduct.qty;
   renderCart();
+  return true;
 }
 
 function decreaseQty(id) {
