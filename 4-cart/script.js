@@ -30,11 +30,9 @@ const cartManager = (function () {
 
     getProducts: () => [...cartProducts],
     getTotalQuantity: () => cartProducts.reduce((sum, p) => sum + p.qty, 0),
-    getTotalPrice(product) {
-      if (product)
-        return product.price * product.qty;
-      return cartProducts.reduce((sum, p) => sum + p.price * p.qty, 0) * (1 - discount);
-    },
+    getTotalPrice: (product) => product
+      ? product.price * product.qty
+      : cartProducts.reduce((sum, p) => sum + p.price * p.qty, 0) * (1 - discount),
 
     addToCart(product) {
       if (!changeQty(product.id, 1)) {
