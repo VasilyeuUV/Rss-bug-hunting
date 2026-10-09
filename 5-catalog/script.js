@@ -26,6 +26,9 @@ function getFiltered() {
   //   result = result.filter((p) => p.name === search);
   // }
 
+  result = getProductsByCategory(categorySelect.value)
+
+
   // if (category !== "all") {
   //   result = products.filter((p) => p.category !== category);
   // }
@@ -38,6 +41,16 @@ function getFiltered() {
 
   return result;
 }
+
+
+function getProductsByCategory(category) {
+  const result = products.filter((p) => p.category === category)
+  return result.length > 0
+    ? result
+    : products;
+}
+
+
 
 function renderProductItem(product) {
   const card = document.createElement("div");
@@ -52,12 +65,15 @@ function renderProductItem(product) {
 }
 
 function render() {
+  grid.replaceChildren();
+
   const items = getFiltered();
   items.forEach(renderProductItem);
   countEl.textContent = products.length;
 }
 
 function init() {
+  categorySelect.addEventListener("change", render);
 
   render();
 }
