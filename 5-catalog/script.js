@@ -9,6 +9,12 @@ const products = [
   { id: 8, name: "JBL Flip", price: 129, category: "audio" },
 ];
 
+const SORT = Object.freeze({
+  DEFAULT: "default",
+  ASC: "asc",
+  DESC: "desc"
+});
+
 const searchInput = document.getElementById("search");
 const categorySelect = document.getElementById("category");
 const sortSelect = document.getElementById("sort");
@@ -16,41 +22,59 @@ const resetBtn = document.getElementById("reset");
 const grid = document.getElementById("grid");
 const countEl = document.getElementById("count");
 
+function setDefaultFilters() {
+  searchInput.value = "";
+  categorySelect.value = "all";
+  sortSelect.value = SORT.DEFAULT;
+}
+
 function getFiltered() {
-  let result = products;
-  // const search = searchInput.value;
-  // const category = categorySelect.value;
-  // const sort = sortSelect.value;
+  const filters = [
+    (list) => getProductsByName(list, searchInput.value),
+    (list) => getProductsByCategory(list, categorySelect.value),
+    (list) => sortProducts(list, sortSelect.value)
+  ];
 
-  // if (search) {
-  //   result = result.filter((p) => p.name === search);
-  // }
-
-  result = getProductsByCategory(categorySelect.value)
-
-
-  // if (category !== "all") {
-  //   result = products.filter((p) => p.category !== category);
-  // }
-
-  // if (sort === "asc") {
-  //   result.sort((a, b) => b.price - a.price);
-  // } else if (sort === "desc") {
-  //   result.sort((a, b) => a.price - b.price);
-  // }
-
-  return result;
+  return filters.reduce((result, filter) => filter(result), products);
 }
 
-
-function getProductsByCategory(category) {
-  const result = products.filter((p) => p.category === category)
-  return result.length > 0
-    ? result
-    : products;
+function getProductsByName(selectedProducts, name) {
+  const search = name
+    .trim()
+    .toLowerCase();
+  return search
+    ? selectedProducts.filter(p => p.name.toLowerCase().includes(search))
+    : selectedProducts;
 }
 
+function getProductsByCategory(selectedProducts, category) {
+  return !category
+    || category === "all"
+    ? selectedProducts
+    : selectedProducts.filter((p) => p.category === category)
+}
 
+function sortProducts(selectedProducts, sort) {
+  if (!sort
+    || sort === SORT.DEFAULT)
+    return selectedProducts;
+
+  const sorted = [...selectedProducts];
+
+  switch (sort) {
+    case SORT.ASC:
+      return sorted.sort((a, b) => a.price - b.price);
+    case SORT.DESC:
+      return sorted.sort((a, b) => b.price - a.price);
+    default:
+      return selectedProducts;
+  }
+}
+
+function clearFilters() {
+  setDefaultFilters();
+  render();
+}
 
 function renderProductItem(product) {
   const card = document.createElement("div");
@@ -73,8 +97,12 @@ function render() {
 }
 
 function init() {
-  categorySelect.addEventListener("change", render);
+  setDefaultFilters();
 
+  searchInput.addEventListener("input", render);
+  categorySelect.addEventListener("change", render);
+  sortSelect.addEventListener("change", render);
+  resetBtn.addEventListener("click", clearFilters);
   render();
 }
 
